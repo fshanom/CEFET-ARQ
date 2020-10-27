@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 #define TAMANHO 4096
 
@@ -14,59 +15,13 @@ struct SRegistro {
 };
 typedef struct SRegistro Registro;
 
-/*
-Registro buscaBinaria(FILE *arqOrigem, char cpfDesejado[15]){
-	Registro buffer;
-	int ini, fim, meio, count = 0;
-	ini = 0; //primeiro byte do arquivo
-    fseek(arqOrigem, 0, SEEK_END); //Cabeça de leitura no final do arquivo.
-    long tam = ftell(arqOrigem); //tamanho do arquivo em bytes
-    rewind(arqOrigem); //volta a cabeça de leitura pro inicio do arquivo
-
-    fim = (tam/sizeof(Registro))-1;
-    printf("Tamanho do arquivo total em bytes: %ld\nTamanho de cada registro: %ld\nQtd de registros: %d\n", tam, sizeof(Endereco), fim);
-
-    
-    while (ini <= fim)
-    {
-        count++;
-        meio = (fim+ini)/2; //calcula o meio
-        fseek(arqOrigem, meio * sizeof(Registro), SEEK_SET); //posiciona a cabeça de leitura no meio
-        fread(&buffer, sizeof(Endereco), 1, arqOrigem); //Lê o registro do meio
-
-        if(strncmp(cpfDesejado, buffer.cpf, 15) == 0) //Se o cep do buffer for igual ao desejado
-        {
-            achei = 0;
-            printf("Achei.\nPosicao Atual: %ld\n", ftell(f));
-            break;
-        }
-        else if (strncmp(argv[1],buffer.cep, 8) > 0)
-        {
-            ini = meio + 1;
-            //printf("IF Maior teste");
-        }
-        else
-        {
-            fim = meio - 1;
-            //printf("IF Menor teste");
-        }
-    }
-
-	return registro;
-}
-*/
-
 int main(int argc, char** argv)
 {
-    //struct tem 92 bytes, teste abaixo
-	    //struct Registro r;
-        //int tam = sizeof(r);
-        //printf("%d",tam);
-
     FILE *arqOrigem, *arqDestino;
-	char buffer[sizeof(Registro)];
 	char registroAtual[sizeof(Registro)];
-	long qtdRegistros, tamanhoArq;
+	int qt, inscricoes = 0;
+	long posicao;
+	Registro registro, registroSucessor, registroMaiorId;
 
     //valida uso do programa
 	if(argc != 3)
@@ -77,7 +32,7 @@ int main(int argc, char** argv)
 	}
 
     //abre arquivo de entrada
-	arqOrigem = fopen(argv[1],"r");
+	arqOrigem = fopen(argv[1],"rb");
 	if(!arqOrigem)
 	{
 		fprintf(stderr,"Arquivo %s não pode ser aberto para leitura\n", argv[1]);
@@ -93,17 +48,74 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-    //descobrir o número de registros
+	qt = fread(&registro,sizeof(Registro),1,arqOrigem);
+	fread(&registroSucessor,sizeof(Registro),1,arqOrigem);
+	while(qt > 0)
+	{
+		if(strncmp(registro.cpf,registroSucessor.cpf,15)==0)
+		{
+			//compara qual tem o maior id e guarda
+			if(registro.id_inscricao > registroSucessor.id_inscricao)
+			{
+				registroMaiorId = registro;
+			}
+			else
+			{
+				registroMaiorId = registroSucessor;
+			}
+			//pega próximo registro
+			fread(&registroSucessor,sizeof(Registro),1,arqOrigem);
+			//loop para comparar todos os possíveis proximos registros que possuam o mesmo cpf
+			while(strncmp(registroMaiorId.cpf,registroSucessor.cpf,15)==0)
+				if(registroSucessor.id_inscricao > registroMaiorId.id_inscricao)
+				{
+					registroMaiorId = registroSucessor;
+				}
+				fread(&registroSucessor,sizeof(Registro),1,arqOrigem);
+			
+			//fread(&registro,sizeof(Registro),1,arqOrigem);
+			registro = registroSucessor;
+			fwrite(&registroMaiorId,sizeof(Registro),1,arqDestino);
 
+		}
+		else
+		{
+			//escreve registro de cpf unico no arquivo de destino
+			fwrite(&registro,sizeof(Registro),1,arqDestino);
+		}
+		
+		qt = fread(&registroSucessor,sizeof(Registro),1,arqOrigem);		
+	}
 
-    fseek(arqOrigem,0,SEEK_END);
-	tamanhoArq = ftell(arqOrigem);
-	qtdRegistros = tamanhoArq/sizeof(Registro);
+	fseek(arqDestino,0,SEEK_END);
+	posicao = ftell(arqDestino);
+	printf("Tamanho do Arquivo em registros: %ld\n", posicao/sizeof(Registro));
 
-    
-    //enquanto existirem registros (até o fim do arquivo)
-        //pega CPF do registro atual (se cada linha tem 92 bytes, pega do byte)
-	
-
+	printf("registros inscritos: %d",&inscricoes);
+	fclose(arqOrigem);
+	fclose(arqDestino);
 	return 0;
 }
+
+/*
+Algoritmo:
+
+pega primeiro registro
+enquanto existem registros:
+	pega registro sucessor
+	se o cpfs forem iguais:
+		compara os cpfs e guarda o registro de maior id
+		pega próximo registro (registro "sucessor" ao sucessor)
+		se cpf do proximo registro == cpf do registro de maior id
+			enquanto o cpf do proximo registro for igual: existirem mais registros com o mesmo cpf
+				coloca próximo registro no vetor
+				pega próximo registro
+		se não: não existem mais registros com esse cpf
+			atualiza o registro atual do loop maior com o sucessor ao ultimo registro com o mesmo cpf encontrado
+			escreve registro de maior id no arquivo destino
+		volta loop
+	se não: o primeiro cpf é unico
+		escreve  registro no arquivo destino
+		sucessor vira registro
+		volta loop
+*/
