@@ -1,4 +1,6 @@
 001 computacao          17730467720    30/12/2000 email@email.com                         
-001 computacao          17730467720    30/12/2000 email@email.com                         
+090 computacao          17730467720    30/12/2000 email@email.com                         
 006 computacao          41785423695    14/04/1980 testeemail@email.com                    
 004 engenharia          98878465512    14/02/1987 outroemail@gmail.com                    
+060 engenharia          98878465512    14/02/1987 outroemail@gmail.com                    
+009 engenharia          98878465512    14/02/1987 outroemail@gmail.com                    
