@@ -12,43 +12,41 @@ struct SRegistro {
 };
 typedef struct SRegistro Registro;
 
-int buscaBinaria(FILE *candidatosB, Registro registroEmA)
+int buscaBinaria(FILE *arquivo, Registro registro)
 {
-	Registro registroEmB;
-	int achei = 1, count;
-	long ini, tam, fim, meio;
-	ini = 0; //primeiro byte do arquivo
-    fseek(candidatosB, 0, SEEK_END); //Cabeça de leitura no final do arquivo.
-    tam = ftell(candidatosB); //tamanho do arquivo em bytes
-    rewind(candidatosB); //volta a cabeça de leitura pro inicio do arquivo
+    int fim, ini, meio, count = 0, achei;
+    long tam;
+    Registro buffer;
+    ini = 0; //primeiro byte do arquivo
+    fseek(arquivo, 0, SEEK_END); //Cabeça de leitura no final do arquivo.
+    tam = ftell(arquivo); //tamanho do arquivo em bytes
+    rewind(arquivo); //volta a cabeça de leitura pro inicio do arquivo
 
     fim = (tam/sizeof(Registro))-1;
+    //printf("Tamanho do arquivo total em bytes: %ld\nTamanho de cada registro: %ld\nQtd de registros: %d\n", tam, sizeof(Endereco), fim);
+
     
     while (ini <= fim)
     {
         count++;
         meio = (fim+ini)/2; //calcula o meio
-        fseek(candidatosB, meio * sizeof(Registro), SEEK_SET); //posiciona a cabeça de leitura no meio
-        fread(&registroEmB, sizeof(Registro), 1, candidatosB); //Lê o registro do meio
+        fseek(arquivo, meio * sizeof(Registro), SEEK_SET); //posiciona a cabeça de leitura no meio
+        fread(&buffer, sizeof(Registro), 1, arquivo); //Lê o registro do meio
 
-        if(strncmp(registroEmA.cpf,registroEmB.cpf, 15) == 0) //Se o cpf do buffer for igual ao desejado
+        if(strncmp(registro.cpf,buffer.cpf, 15) == 0) //Se o cep do buffer for igual ao desejado
         {
-            achei = 0;
-            return achei;
+            return 0;
         }
-        else if (strncmp(registroEmA.cpf,registroEmB.cpf, 15) > 0)
+        else if (strncmp(registro.cpf,buffer.cpf, 15) > 0)
         {
             ini = meio + 1;
-            //printf("IF Maior teste");
         }
         else
         {
             fim = meio - 1;
-            //printf("IF Menor teste");
         }
     }
-    
-    return achei;
+    return -1;
 }
 
 int main(int argc, char**argv)
@@ -66,14 +64,14 @@ int main(int argc, char**argv)
 		return 1;
 	}
 
-	arquivoA = fopen("candidatosA.dat","rb");
+	arquivoA = fopen(argv[1],"r");
 	if(!arquivoA)
 	{
 		fprintf(stderr,"Arquivo %s não pode ser aberto para leitura\n", argv[1]);
 		return 1;
 	}
 
-    arquivoB = fopen("candidatosB.dat","rb");
+    arquivoB = fopen(argv[2],"r");
 	if(!arquivoB)
 	{
 		fclose(arquivoA);
@@ -86,11 +84,11 @@ int main(int argc, char**argv)
 	while(registroA > 0)
 	{
 		c++;
-		achei = buscaBinaria(arquivoA, bufferA);
-		if (achei == 0)
-		{
-        	printf("%.40s\n",bufferA.email);
-		}
+        achei = buscaBinaria(arquivoB, bufferA);
+        if (achei == 0)
+        {
+            printf("%.40s\n",bufferA.email);
+        }
 		registroA = fread(&bufferA,sizeof(Registro),1,arquivoA);	
 	}
 
