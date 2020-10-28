@@ -23,8 +23,6 @@ int buscaBinaria(FILE *arquivo, Registro registro)
     rewind(arquivo); //volta a cabeça de leitura pro inicio do arquivo
 
     fim = (tam/sizeof(Registro))-1;
-    //printf("Tamanho do arquivo total em bytes: %ld\nTamanho de cada registro: %ld\nQtd de registros: %d\n", tam, sizeof(Endereco), fim);
-
     
     while (ini <= fim)
     {
@@ -97,11 +95,11 @@ int main(int argc, char**argv)
 	fclose(arquivoB);
 }
 
-	/*
-	Algoritmo:
-		pega um registro do A
-		faz busca binaria no B
-		se existir no b
-		imprime
-		se não, passa pro proximo
-	*/
+/*
+Algoritmo:
+    pega um registro do A
+    faz busca binaria no B
+    se existir no b
+    imprime
+    se não, passa pro proximo
+*/

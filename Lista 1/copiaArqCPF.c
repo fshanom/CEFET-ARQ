@@ -1,9 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define TAMANHO 4096
-
-//92 bytes
 struct SRegistro {
     int id_inscricao;
     char curso[20];
