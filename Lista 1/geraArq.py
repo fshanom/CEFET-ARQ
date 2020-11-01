@@ -57,7 +57,7 @@ rnd = random_stuff()
 ids = rnd.id_list
 cpfs = rnd.cpf_list
 
-f = open('./candidatos.dat', 'wb')
+f = open('./candidatosReduzido.dat', 'wb')
 
 for i in range(0,30):
     if i % 3 != 0:
