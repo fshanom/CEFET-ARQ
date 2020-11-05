@@ -63,7 +63,7 @@ int main(int argc, char** argv)
 	fread(&registroSucessor,sizeof(Registro),1,arqOrigem);
 	while(qt > 0)
 	{
-		if(ftell(arqOrigem) == EOF)
+		if(feof(arqOrigem))
 		{
 			break;
 		}
@@ -80,7 +80,10 @@ int main(int argc, char** argv)
 				registroMaiorId = registroSucessor;
 			}
 			//pega próximo registro
-			fread(&registroSucessor,sizeof(Registro),1,arqOrigem);
+			qt = fread(&registroSucessor,sizeof(Registro),1,arqOrigem);
+			if(qt == 0){
+				break;
+			}
 			//loop para comparar todos os possíveis proximos registros que possuam o mesmo cpf
 			if (strncmp(registroMaiorId.cpf,registroSucessor.cpf,15)==0)
 			{
@@ -90,7 +93,12 @@ int main(int argc, char** argv)
 					{
 						registroMaiorId = registroSucessor;
 					}
-					fread(&registroSucessor,sizeof(Registro),1,arqOrigem);
+
+					qt = fread(&registroSucessor,sizeof(Registro),1,arqOrigem);
+					if(qt == 0)
+					{
+						break;
+					}
 				}
 			}
 
